@@ -366,7 +366,7 @@ namespace Masuit.Tools.Reflection
 
         #endregion
 
-        #region 辅助类  
+        #region Class辅助类  
 
         /// <summary>  
         /// 自定义的属性信息类型。  
@@ -391,6 +391,12 @@ namespace Masuit.Tools.Reflection
                 PropertyName = propertyName;
             }
 
+            /// <summary>
+            /// 根据属性类型名称,属性名称构造实例，并设置属性值。
+            /// </summary>
+            /// <param name="type"></param>
+            /// <param name="propertyName"></param>
+            /// <param name="propertyValue"></param>
             public CustPropertyInfo(Type type, string propertyName, object propertyValue) : this(type, propertyName)
             {
                 PropertyValue = propertyValue;

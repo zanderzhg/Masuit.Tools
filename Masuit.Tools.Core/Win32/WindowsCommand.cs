@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Security.Cryptography;
 
 namespace Masuit.Tools.Win32
 {
@@ -10,35 +9,6 @@ namespace Masuit.Tools.Win32
     /// </summary>
     public static class WindowsCommand
     {
-
-        /// <summary>
-        /// 生成真正的随机数
-        /// </summary>
-        /// <param name="r"></param>
-        /// <param name="seed"></param>
-        /// <returns></returns>
-        public static int StrictNext(this Random r, int seed = Int32.MaxValue)
-        {
-            byte[] b = new byte[4];
-            new RNGCryptoServiceProvider().GetBytes(b);
-            return new Random(BitConverter.ToInt32(b, 0)).Next(seed);
-        }
-
-        /// <summary>
-        /// 产生正态分布的随机数
-        /// </summary>
-        /// <param name="rand"></param>
-        /// <param name="mean">均值</param>
-        /// <param name="stdDev">方差</param>
-        /// <returns></returns>
-        public static double NextGauss(this Random rand, double mean, double stdDev)
-        {
-            double u1 = 1.0 - rand.NextDouble();
-            double u2 = 1.0 - rand.NextDouble();
-            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
-            return mean + stdDev * randStdNormal;
-        }
-
         /// <summary>
         /// 执行一个控制台程序，并获取在控制台返回的数据
         /// </summary>
@@ -75,11 +45,14 @@ namespace Masuit.Tools.Win32
                         {
                             process.WaitForExit(outtime);
                         }
+
                         output = process.StandardOutput.ReadToEnd(); //读取进程的输出  
                     }
                 }
+
                 return output;
             }
+
             throw new Exception("命令参数无效，必须传入一个控制台能被cmd.exe可执行程序;\n如：ping 127.0.0.1");
         }
     }

@@ -17,7 +17,6 @@ namespace Masuit.Tools.Database
         /// </summary>
         /// <param name="dt">DataTable</param>
         /// <returns>返回Datatable 增加字段 identityid </returns>
-        /// <exception cref="DuplicateNameException">The collection already has a column with the specified name. (The comparison is not case-sensitive.) </exception>
         public static DataTable AddIdentityColumn(this DataTable dt)
         {
             if (!dt.Columns.Contains("identityid"))
@@ -43,88 +42,29 @@ namespace Masuit.Tools.Database
         }
 
         /// <summary>
-        /// DataTable转换成实体列表
+        /// datatable转List
         /// </summary>
-        /// <typeparam name="T">实体 T </typeparam>
-        /// <param name="table">datatable</param>
-        /// <returns>强类型的数据集合</returns>
-        public static IList<T> DataTableToList<T>(this DataTable table) where T : class
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static List<T> ToList<T>(this DataTable dt) where T : class, new()
         {
-            if (!HasRows(table))
+            List<T> list = new List<T>();
+            using (dt)
             {
-                return new List<T>();
-            }
-
-            IList<T> list = new List<T>();
-            foreach (DataRow dr in table.Rows)
-            {
-                var model = Activator.CreateInstance<T>();
-
-                foreach (DataColumn dc in dr.Table.Columns)
+                if (dt == null || dt.Rows.Count == 0)
                 {
-                    object drValue = dr[dc.ColumnName];
-                    PropertyInfo pi = model.GetType().GetProperty(dc.ColumnName);
-
-                    if (pi != null && pi.CanWrite && (drValue != null && !Convert.IsDBNull(drValue)))
-                    {
-                        pi.SetValue(model, drValue, null);
-                    }
+                    return list;
                 }
 
-                list.Add(model);
-            }
-
-            return list;
-        }
-
-        /// <summary>
-        /// 实体列表转换成DataTable
-        /// </summary>
-        /// <typeparam name="T">实体</typeparam>
-        /// <param name="list"> 实体列表</param>
-        /// <returns>映射为数据表</returns>
-        /// <exception cref="OverflowException">The array is multidimensional and contains more than <see cref="F:System.Int32.MaxValue" /> elements.</exception>
-        public static DataTable ListToDataTable<T>(this IList<T> list) where T : class
-        {
-            if (list == null || list.Count <= 0)
-            {
-                return null;
-            }
-
-            var dt = new DataTable(typeof(T).Name);
-            PropertyInfo[] myPropertyInfo = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            int length = myPropertyInfo.Length;
-            bool createColumn = true;
-            foreach (T t in list)
-            {
-                if (t == null)
+                DataTableBuilder<T> eblist = DataTableBuilder<T>.CreateBuilder(dt.Rows[0]);
+                foreach (DataRow info in dt.Rows)
                 {
-                    continue;
+                    list.Add(eblist.Build(info));
                 }
 
-                var row = dt.NewRow();
-                for (int i = 0; i < length; i++)
-                {
-                    PropertyInfo pi = myPropertyInfo[i];
-                    string name = pi.Name;
-                    if (createColumn)
-                    {
-                        var column = new DataColumn(name, pi.PropertyType);
-                        dt.Columns.Add(column);
-                    }
-
-                    row[name] = pi.GetValue(t, null);
-                }
-
-                if (createColumn)
-                {
-                    createColumn = false;
-                }
-
-                dt.Rows.Add(row);
+                return list;
             }
-
-            return dt;
         }
 
         /// <summary>
@@ -159,7 +99,7 @@ namespace Masuit.Tools.Database
                 return result;
             }
 
-            PropertyInfo[] propertys = list[0].GetType().GetProperties();
+            var propertys = list[0].GetType().GetProperties();
             propertys.ForEach(pi =>
             {
                 if (propertyNameList.Count == 0)
@@ -295,7 +235,6 @@ namespace Masuit.Tools.Database
                 case "float":
                     newType = typeof(float);
                     break;
-
                 case "string":
                     newType = typeof(string);
                     break;
@@ -330,7 +269,7 @@ namespace Masuit.Tools.Database
         public static DataRow[] GetDataRowArray(this DataRowCollection drc)
         {
             int count = drc.Count;
-            DataRow[] drs = new DataRow[count];
+            var drs = new DataRow[count];
             for (int i = 0; i < count; i++)
             {
                 drs[i] = drc[i];
@@ -354,53 +293,12 @@ namespace Masuit.Tools.Database
 
             DataTable dt = rows[0].Table.Clone();
             dt.DefaultView.Sort = rows[0].Table.DefaultView.Sort;
-            for (int i = 0; i < rows.Length; i++)
+            foreach (var t in rows)
             {
-                dt.LoadDataRow(rows[i].ItemArray, true);
+                dt.LoadDataRow(t.ItemArray, true);
             }
 
             return dt;
-        }
-
-        /// <summary>
-        /// 排序表的视图
-        /// </summary>
-        /// <param name="dt">原内存表</param>
-        /// <param name="sorts">排序方式</param>
-        /// <returns>排序后的内存表</returns>
-        public static DataTable SortedTable(this DataTable dt, params string[] sorts)
-        {
-            if (dt.Rows.Count > 0)
-            {
-                string tmp = "";
-                for (int i = 0; i < sorts.Length; i++)
-                {
-                    tmp += sorts[i] + ",";
-                }
-
-                dt.DefaultView.Sort = tmp.TrimEnd(',');
-            }
-
-            return dt;
-        }
-
-        /// <summary>
-        /// 根据条件过滤表的内容
-        /// </summary>
-        /// <param name="dt">原内存表</param>
-        /// <param name="condition">过滤条件</param>
-        /// <returns>过滤后的内存表</returns>
-        public static DataTable FilterDataTable(this DataTable dt, string condition)
-        {
-            if (condition.Trim().Length == 0)
-            {
-                return dt;
-            }
-
-            var newdt = dt.Clone();
-            DataRow[] dr = dt.Select(condition);
-            dr.ForEach(t => newdt.ImportRow(t));
-            return newdt;
         }
     }
 }

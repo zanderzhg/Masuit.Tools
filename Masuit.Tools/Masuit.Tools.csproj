@@ -25,6 +25,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>bin\Debug\Masuit.Tools.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
+    <CodeAnalysisRuleSet />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -36,23 +37,27 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>bin\Release\Masuit.Tools.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
+    <CodeAnalysisRuleSet />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AngleSharp, Version=0.9.9.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
       <HintPath>..\packages\AngleSharp.0.9.11\lib\net45\AngleSharp.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlSanitizer, Version=3.0.0.0, Culture=neutral, PublicKeyToken=61c49a1a9e79cc28, processorArchitecture=MSIL">
-      <HintPath>..\packages\HtmlSanitizer.4.0.199\lib\net45\HtmlSanitizer.dll</HintPath>
+    <Reference Include="HtmlAgilityPack, Version=1.11.8.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.11.8\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.1.0.145, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.1.1.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    <Reference Include="HtmlSanitizer, Version=4.0.0.0, Culture=neutral, PublicKeyToken=61c49a1a9e79cc28, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlSanitizer.4.0.217\lib\net45\HtmlSanitizer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpCompress, Version=0.23.0.0, Culture=neutral, PublicKeyToken=afb0a02973931d96, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpCompress.0.23.0\lib\net45\SharpCompress.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis, Version=1.2.6.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.1.2.6\lib\net45\StackExchange.Redis.dll</HintPath>
@@ -89,6 +94,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Database\DataTableBuilder.cs" />
     <Compile Include="Database\DataTableHelper.cs" />
     <Compile Include="DateTimeExt\ChineseCalendar.cs" />
     <Compile Include="Database\DataExt.cs" />
@@ -97,10 +103,11 @@
     <Compile Include="DateTimeExt\DateInfoStruct.cs" />
     <Compile Include="DateTimeExt\TimeHelper.cs" />
     <Compile Include="DateTimeExt\WeekHolidayStruct.cs" />
-    <Compile Include="Mapping\EnumerableCopier.cs" />
-    <Compile Include="Mapping\ExpressionGenericMapper.cs" />
+    <Compile Include="Files\ClassZip.cs" />
+    <Compile Include="Files\SharpZip.cs" />
+    <Compile Include="Files\WinrarHelper.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="Files\Compress.cs" />
+    <Compile Include="Files\SevenZipCompressor.cs" />
     <Compile Include="Files\ExtensionAttach.cs" />
     <Compile Include="Files\INIFile.cs" />
     <Compile Include="Hardware\CpuInfo.cs" />
@@ -108,32 +115,58 @@
     <Compile Include="Hardware\DiskData.cs" />
     <Compile Include="Hardware\MemoryInfo.cs" />
     <Compile Include="Hardware\NetData.cs" />
-    <Compile Include="Hardware\OnLogicalDiskProc.cs" />
     <Compile Include="Hardware\RamInfo.cs" />
     <Compile Include="Hardware\SystemtimeInfo.cs" />
     <Compile Include="Hardware\Unit.cs" />
-    <Compile Include="Html\HtmlHelper.cs" />
     <Compile Include="Html\HtmlTools.cs" />
     <Compile Include="Linq\LinqExtension.cs" />
-    <Compile Include="Linq\ParameterReplacer.cs" />
     <Compile Include="Logging\LogInfo.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\LogManager.cs" />
-    <Compile Include="Mapping\MapClass.cs" />
-    <Compile Include="Mapping\MapperTools.cs" />
-    <Compile Include="Mapping\UnsupportedTypeException.cs" />
+    <Compile Include="Mapping\Copier.cs" />
+    <Compile Include="Mapping\Core\CreateConfig.cs" />
+    <Compile Include="Mapping\Core\MapperConfiguration.cs" />
+    <Compile Include="Mapping\Core\MapperConfigurationBase.cs" />
+    <Compile Include="Mapping\Core\MapperConfigurationCollectionContainer.cs" />
+    <Compile Include="Mapping\Core\PropertiesNotMapped.cs" />
+    <Compile Include="Mapping\Core\TypePairMapper.cs" />
+    <Compile Include="Mapping\Exceptions\MapperExceptionBase.cs" />
+    <Compile Include="Mapping\Exceptions\MapperExistException.cs" />
+    <Compile Include="Mapping\Exceptions\MapperNotInitializedException.cs" />
+    <Compile Include="Mapping\Exceptions\NoActionAfterMappingException.cs" />
+    <Compile Include="Mapping\Exceptions\NoFoundMapperException.cs" />
+    <Compile Include="Mapping\Exceptions\NotSameTypePropertyException.cs" />
+    <Compile Include="Mapping\Exceptions\PropertyNoExistException.cs" />
+    <Compile Include="Mapping\Exceptions\ReadOnlyPropertyException.cs" />
+    <Compile Include="Mapping\ExpressionCpoier.cs" />
+    <Compile Include="Mapping\ExpressionMapper.cs" />
+    <Compile Include="Mapping\Extensions\ExpressionExtentions.cs" />
+    <Compile Include="Mapping\Extensions\QueryableExtentions.cs" />
+    <Compile Include="Mapping\Helper\MapperHelper.cs" />
+    <Compile Include="Mapping\Helper\TypeSystem.cs" />
+    <Compile Include="Mapping\Visitor\ChangParameterExpressionVisitor.cs" />
+    <Compile Include="Mapping\Visitor\ConverterExpressionVisitor.cs" />
+    <Compile Include="Mapping\Visitor\MapperExpressionVisitor.cs" />
+    <Compile Include="Mapping\Visitor\PropertiesVisitor.cs" />
+    <Compile Include="Media\ThumbnailCutMode.cs" />
     <Compile Include="Models\BaiduIP.cs" />
     <Compile Include="Models\IspInfo.cs" />
     <Compile Include="Models\PhysicsAddress.cs" />
     <Compile Include="Models\TaobaoIP.cs" />
+    <Compile Include="Mvc\ActionResults\ResumeActionResultBase.cs" />
+    <Compile Include="Mvc\ActionResults\ResumeFileContentResult.cs" />
+    <Compile Include="Mvc\ActionResults\ResumeFilePathResult.cs" />
+    <Compile Include="Mvc\ActionResults\ResumeFileStreamResult.cs" />
+    <Compile Include="Mvc\ActionResults\ResumeRequest.cs" />
     <Compile Include="Mvc\ControllerExtension.cs" />
     <Compile Include="Mvc\HttpHeaders.cs" />
-    <Compile Include="Mvc\Internal\Range.cs" />
+    <Compile Include="Mvc\Internal\ByteRange.cs" />
+    <Compile Include="Mvc\Mime\ContentType.cs" />
+    <Compile Include="Mvc\ActionResults\ResumeFileResult.cs" />
     <Compile Include="Mvc\Mime\DefaultMimeItems.cs" />
     <Compile Include="Mvc\Mime\IMimeMapper.cs" />
     <Compile Include="Mvc\Mime\MimeMapper.cs" />
     <Compile Include="Mvc\Mime\MimeMappingItem.cs" />
-    <Compile Include="Mvc\ResumeFileResult.cs" />
     <Compile Include="Net\CacheHelper.cs" />
     <Compile Include="Net\CookieHelper.cs" />
     <Compile Include="Net\FtpClient.cs" />
@@ -164,7 +197,7 @@
     <Compile Include="Systems\Lock.cs" />
     <Compile Include="Systems\RedisLock.cs" />
     <Compile Include="Systems\SnowFlake.cs" />
-    <Compile Include="Systems\StopwatchExtension.cs" />
+    <Compile Include="Systems\StopwatchHelper.cs" />
     <Compile Include="Validator\ComplexPassword.cs" />
     <Compile Include="Validator\IsEmailAttribute.cs" />
     <Compile Include="Validator\IsIPAddressAttribute.cs" />

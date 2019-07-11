@@ -1,6 +1,13 @@
 # Masuit.Tools
 包含一些常用的操作类，大都是静态类，加密解密，反射操作，硬件信息，字符串扩展方法，日期时间扩展操作，大文件拷贝，图像裁剪，验证码等常用封装。
-[官网教程](http://masuit.com/55)
+
+[官网教程](http://masuit.com/55)  
+项目开发模式：日常代码积累+网络搜集
+
+[![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)  
+请注意：一旦使用本开源项目以及引用了本项目或包含本项目代码的公司因为违反劳动法（包括但不限定非法裁员、超时用工、雇佣童工等）在任何法律诉讼中败诉的，项目作者有权利追讨本项目的使用费，或者直接不允许使用任何包含本项目的源代码！
+
+⭐⭐⭐喜欢这个项目的话就Star、Fork、Follow素质三连关♂注一下吧⭐⭐⭐
 
 # 特色功能示例代码
 ### 1.检验字符串是否是Email、手机号、URL、IP地址、身份证号
@@ -11,7 +18,7 @@ bool isUrl = "http://masuit.com".MatchUrl();
 bool isPhoneNumber = "15205201520".MatchPhoneNumber();
 bool isIdentifyCard = "312000199502230660".MatchIdentifyCard();// 校验中国大陆身份证号
 ```
-### 2.硬件监测
+### 2.硬件监测(仅支持Windows)
 ```csharp
 float load = SystemInfo.CpuLoad;// 获取CPU占用率
 long physicalMemory = SystemInfo.PhysicalMemory;// 获取物理内存总数
@@ -30,12 +37,12 @@ RamInfo ramInfo = SystemInfo.GetRamInfo();// 获取内存信息
 ```
 ### 3.大文件操作
 ```csharp
-        FileStream fs = new FileStream(@"D:\boot.vmdk", FileMode.OpenOrCreate, FileAccess.ReadWrite);
-        {
-                //fs.CopyToFile(@"D:\1.bak");//同步复制大文件
-                fs.CopyToFileAsync(@"D:\1.bak");//异步复制大文件
-                string md5 = fs.GetFileMD5Async().Result;//异步获取文件的MD5
-        }
+FileStream fs = new FileStream(@"D:\boot.vmdk", FileMode.OpenOrCreate, FileAccess.ReadWrite);
+{
+        //fs.CopyToFile(@"D:\1.bak");//同步复制大文件
+        fs.CopyToFileAsync(@"D:\1.bak");//异步复制大文件
+        string md5 = fs.GetFileMD5Async().Result;//异步获取文件的MD5
+}
 ```
 ### 4.html的防XSS处理：
 ```csharp
@@ -184,20 +191,39 @@ var list = new List<MyClass>()
 var table = list.Select(c => new{姓名=c.Name,年龄=c.Age}).ToList().ToDataTable();// 将自动填充列姓名和年龄
 ```
 ### 14.文件压缩解压
+.NET Framework
 ```csharp
-SharpZip.PackFiles("D:\\1.zip","D:\\test");
-SharpZip.UnpackFiles("D:\\1.zip","D:\\test");
-```
-```csharp
-ClassZip.Zip("D:\\1.txt","D:\\1.zip");
-ClassZip.UnZip("D:\\1.zip","D:\\1");
-byte[] bytes = ClassZip.ZipStream(new List<string>()
+MemoryStream ms = SevenZipCompressor.ZipStream(new List<string>()
 {
-    "D:\\1.txt",
-    "E:\\2.txt",
-    "D:\\test\\3.txt"
-});
+    @"D:\1.txt",
+    "http://ww3.sinaimg.cn/large/87c01ec7gy1fsq6rywto2j20je0d3td0.jpg",
+});//压缩成内存流
 ```
+```csharp
+SevenZipCompressor.Zip(new List<string>()
+{
+    @"D:\1.txt",
+    "http://ww3.sinaimg.cn/large/87c01ec7gy1fsq6rywto2j20je0d3td0.jpg",
+}, zip);//压缩成zip
+SevenZipCompressor.UnRar(@"D:\Download\test.rar", @"D:\Download\");//解压rar
+SevenZipCompressor.Decompress(@"D:\Download\test.tar", @"D:\Download\");//自动识别解压压缩包
+SevenZipCompressor.Decompress(@"D:\Download\test.7z", @"D:\Download\");
+```
+ASP.NET Core
+
+Startup.cs
+```csharp
+services.AddSevenZipCompressor();
+```
+构造函数注入ISevenZipCompressor
+```csharp
+private readonly ISevenZipCompressor _sevenZipCompressor;
+public Test(ISevenZipCompressor sevenZipCompressor)
+{
+    _sevenZipCompressor = sevenZipCompressor;
+}
+```
+使用方式同.NET Framework版本
 ### 15.日志组件
 ```csharp
 LogManager.LogDirectory=AppDomain.CurrentDomain.BaseDirectory+"/logs";
@@ -295,10 +321,10 @@ string s = aes.AESDecrypt(); //AES解密为明文
 string aes = "123456".AESEncrypt("abc");// AES密钥加密为密文
 string s = aes.AESDecrypt("abc"); //AES密钥解密为明文
 
-string aes = "123456".DesEncrypt();// DES加密为密文
-string s = aes.DesDecrypt(); //DES解密为明文
-string aes = "123456".DesEncrypt("abcdefgh");// DES密钥加密为密文
-string s = aes.DesDecrypt("abcdefgh"); //DES密钥加密为密文
+string enc = "123456".DesEncrypt();// DES加密为密文
+string s = enc.DesDecrypt(); //DES解密为明文
+string enc = "123456".DesEncrypt("abcdefgh");// DES密钥加密为密文
+string s = enc.DesDecrypt("abcdefgh"); //DES密钥解密为明文
 
 RsaKey rsaKey = RsaCrypt.GenerateRsaKeys();// 生成RSA密钥对
 string encrypt = "123456".RSAEncrypt(rsaKey.PublicKey);// 公钥加密
@@ -345,6 +371,8 @@ var imgTags = "html".MatchImgTags();//获取html字符串里的所有的img标�
 ### 24.DateTime扩展
 ```csharp
 double milliseconds = DateTime.Now.GetTotalMilliseconds();// 获取毫秒级时间戳
+double microseconds = DateTime.Now.GetTotalMicroseconds();// 获取微秒级时间戳
+double nanoseconds = DateTime.Now.GetTotalNanoseconds();// 获取纳秒级时间戳
 double seconds = DateTime.Now.GetTotalSeconds();// 获取秒级时间戳
 double minutes = DateTime.Now.GetTotalMinutes();// 获取分钟级时间戳
 ...
@@ -381,66 +409,195 @@ List<MyClass> classes = list.DistinctBy(c => c.Email).ToList();
 Console.WriteLine(classes.Count==1);//True
 ```
 ### 27.对象实体映射
+在使用前需要像automapper那样，对mapper进行初始化操作
+```csharp
+using Masuit.Tools.Mapping;
+```
+```csharp
+ExpressionMapper.CreateMap<ClassA, ClassADto>();// 默认关系映射
+ExpressionMapper.CreateMap<ClassB, ClassBDto>().ForMember(s => s.ClassC.PropertyName, d => d.CustomName, true);// 自定义关系映射
+
+ExpressionMapper.ConstructServicesUsing((x) => DependencyResolver.Current.GetService(x));// 使用依赖注入容器进行构造映射
+//ExpressionMapper.ConstructServicesUsing((x) => ServiceLocator.Current.GetInstance(x));// 使用依赖注入容器进行构造映射
+ExpressionMapper.CreateMap<Product, IProduct>().ConstructUsingServiceLocator().ReverseMap();// 链式自定义关系映射和反向映射
+```
+测试class：
 ```csharp
 public class TestClassA
 {
     public string MyProperty { get; set; }
-
+    public int Int { get; set; }
+    public double Double { get; set; }
+    public DateTime DateTime { get; set; }
     public TestClassC TestClassC { get; set; }
     public List<TestClassC> List { get; set; }
-    public TestClassC[] Array { get; set; }
 }
 
 public class TestClassB
 {
     public string MyProperty { get; set; }
-
+    public int Int { get; set; }
+    public double Double { get; set; }
+    public DateTime DateTime { get; set; }
     public TestClassC TestClassC { get; set; }
     public List<TestClassD> List { get; set; }
-    public TestClassD[] Array { get; set; }
 }
 
 public class TestClassC
 {
     public string MyProperty { get; set; }
+    public int Int { get; set; }
+    public double Double { get; set; }
+    public DateTime DateTime { get; set; }
     public TestClassD Obj { get; set; }
 }
 
 public class TestClassD
 {
     public string MyProperty { get; set; }
+    public int Int { get; set; }
+    public double Double { get; set; }
+    public DateTime DateTime { get; set; }
     public TestClassC Obj { get; set; }
 }
 ```
+构造一个结构相对复杂的对象：
 ```csharp
-TestClassA a = new TestClassA()
+var a = new TestClassA()
 {
+    MyProperty = "ssssssssssssssssssssss",
+    DateTime = DateTime.Now,
+    Double = 123.33,
+    Int = 100,
     TestClassC = new TestClassC()
     {
-        MyProperty = "string"
+        MyProperty = "ccccccccccccccccccccccccccc",
+        DateTime = DateTime.Now,
+        Double = 2345.555,
+        Int = 10100,
+        Obj = new TestClassD()
+        {
+            MyProperty = "ddddddddddddddddddddddddd",
+            Obj = new TestClassC()
+            {
+                MyProperty = "cccccc",
+                DateTime = DateTime.Now,
+                Double = 23458894.555,
+                Int = 10100000,
+                Obj = new TestClassD()
+            }
+        }
     },
     List = new List<TestClassC>()
     {
-        new TestClassC(){MyProperty = "cstring"},
-        new TestClassC(){MyProperty = "cstring"},
-    },
-    MyProperty = "string",
-    Array = new[]
-    {
         new TestClassC()
         {
-            MyProperty = "string",
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
             Obj = new TestClassD()
             {
-                MyProperty = "sstring"
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
             }
         },
         new TestClassC()
         {
-            MyProperty = "string",
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
             Obj = new TestClassD()
             {
-                MyProperty = "sstring"
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
+            }
+        },
+        new TestClassC()
+        {
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
+            Obj = new TestClassD()
+            {
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
+            }
+        },
+        new TestClassC()
+        {
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
+            Obj = new TestClassD()
+            {
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
+            }
+        },
+        new TestClassC()
+        {
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
+            Obj = new TestClassD()
+            {
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
             }
         },
     }
@@ -449,46 +606,196 @@ var b = a.Map<TestClassA, TestClassB>();
 ```
 性能测试：i7-4700H+12GB DDR3
 ```csharp
-double time = HiPerfTimer.Execute(() =>
+#region 配置automapper
+
+Mapper.Initialize(e =>
+{
+    e.CreateMap<TestClassA, TestClassB>().ReverseMap();
+    e.CreateMap<TestClassC, TestClassD>().ReverseMap();
+});
+
+#endregion
+
+#region 配置ExpressionMapper
+
+ExpressionMapper.CreateMap<TestClassA, TestClassB>().ReverseMap();
+ExpressionMapper.CreateMap<TestClassC, TestClassD>().ReverseMap();
+
+#endregion
+
+#region 造一个大对象
+
+var a = new TestClassA()
+{
+    MyProperty = "ssssssssssssssssssssss",
+    DateTime = DateTime.Now,
+    Double = 123.33,
+    Int = 100,
+    TestClassC = new TestClassC()
+    {
+        MyProperty = "ccccccccccccccccccccccccccc",
+        DateTime = DateTime.Now,
+        Double = 2345.555,
+        Int = 10100,
+        Obj = new TestClassD()
+        {
+            MyProperty = "ddddddddddddddddddddddddd",
+            Obj = new TestClassC()
+            {
+                MyProperty = "cccccc",
+                DateTime = DateTime.Now,
+                Double = 23458894.555,
+                Int = 10100000,
+                Obj = new TestClassD()
+            }
+        }
+    },
+    List = new List<TestClassC>()
+    {
+        new TestClassC()
+        {
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
+            Obj = new TestClassD()
+            {
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
+            }
+        },
+        new TestClassC()
+        {
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
+            Obj = new TestClassD()
+            {
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
+            }
+        },
+        new TestClassC()
+        {
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
+            Obj = new TestClassD()
+            {
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
+            }
+        },
+        new TestClassC()
+        {
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
+            Obj = new TestClassD()
+            {
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
+            }
+        },
+        new TestClassC()
+        {
+            MyProperty = "cccccc",
+            DateTime = DateTime.Now,
+            Double = 2345.555,
+            Int = 10100,
+            Obj = new TestClassD()
+            {
+                MyProperty = "ddddddddddddddddddddddddddddddddddd",
+                DateTime = DateTime.Now,
+                Double = 2345.555,
+                Int = 10100,
+                Obj = new TestClassC()
+                {
+                    MyProperty = "cccccccccccccccccccccccccccccc",
+                    DateTime = DateTime.Now,
+                    Double = 2345.555,
+                    Int = 10100,
+                    Obj = new TestClassD()
+                }
+            }
+        },
+    }
+};
+
+#endregion
+
+var time = HiPerfTimer.Execute(() =>
+{
+    a.Map<TestClassA, TestClassB>();
+    a.Map<TestClassA, TestClassB>();
+});// 因为第一次需要编译表达式树，所以测试两次
+Console.WriteLine($"ExpressionMapper映射2次耗时：{time}s");// 0.0270508s
+time = HiPerfTimer.Execute(() =>
 {
     for (int i = 0; i < 1000000; i++)
     {
-        TestClassA a = new TestClassA()
-        {
-            TestClassC = new TestClassC()
-            {
-                MyProperty = "string"
-            },
-            List = new List<TestClassC>()
-            {
-                new TestClassC(){MyProperty = "cstring"},
-                new TestClassC(){MyProperty = "cstring"},
-            },
-            MyProperty = "string",
-            Array = new[]
-            {
-                new TestClassC()
-                {
-                    MyProperty = "string",
-                    Obj = new TestClassD()
-                    {
-                        MyProperty = "sstring"
-                    }
-                },
-                new TestClassC()
-                {
-                    MyProperty = "string",
-                    Obj = new TestClassD()
-                    {
-                        MyProperty = "sstring"
-                    }
-                },
-            }
-        };
         var b = a.Map<TestClassA, TestClassB>();
     }
 });
-Console.WriteLine(time);// 0.826132s
+Console.WriteLine($"ExpressionMapper映射1000000次耗时：{time}s");// 1.206569s
+
+time = HiPerfTimer.Execute(() =>
+{
+    Mapper.Map<TestClassB>(a);
+    Mapper.Map<TestClassB>(a);
+});// 映射2次为了和ExpressionMapper保持相同情况
+Console.WriteLine($"AutoMapper映射2次耗时：{time}s");// 0.0281503s
+time = HiPerfTimer.Execute(() =>
+{
+    for (int i = 0; i < 1000000; i++)
+    {
+        var b = Mapper.Map<TestClassB>(a);
+    }
+});
+Console.WriteLine($"AutoMapper映射1000000次耗时：{time}s");// 4.1858825s
 ```
 ### 28.枚举扩展
 ```csharp
@@ -532,6 +839,73 @@ var mc = myClass.AddProperty(new List<ClassHelper.CustPropertyInfo>()
 object newObj = mc.DeleteProperty(new List<string>() { "Email", "Age", "IP", "PhoneNumber" });// 删除属性
 Console.WriteLine(newObj.ToJsonString());// {"Password":null,"Name":"张三","Number":123456.0}
 ```
+### 31.获取线程内唯一对象
+```csharp
+CallContext<T>.SetData("db",dbContext);//设置线程内唯一对象
+CallContext<T>.GetData("db");//获取线程内唯一对象
+```
+### 32.asp.net core 获取静态的HttpContext对象
+Startup.cs
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    // ...
+    services.AddStaticHttpContext();
+    // ...
+}
+
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    // ...
+    app.UseStaticHttpContext();
+    // ...
+}
+```
+
+```csharp
+public async Task<IActionResult> Index()
+{
+    HttpContext context = HttpContext2.Current;
+}
+```
+### 33.邮件发送
+```csharp
+new Email()
+{
+    SmtpServer = "smtp.masuit.com",// SMTP服务器
+    SmtpPort = 25, // SMTP服务器端口
+    EnableSsl = true,//使用SSL
+    Username = "admin@masuit.com",// 邮箱用户名
+    Password = "123456",// 邮箱密码
+    Tos = "10000@qq.com,10001@qq.com", //收件人
+    Subject = "测试邮件",//邮件标题
+    Body = "你好啊",//邮件内容
+}.SendAsync(s =>
+{
+    Console.WriteLine(s);// 发送成功后的回调
+});// 异步发送邮件
+```
+### 34.图像的简单处理
+```csharp
+ImageUtilities.CompressImage(@"F:\src\1.jpg", @"F:\dest\2.jpg");//无损压缩图片
+
+"base64".SaveDataUriAsImageFile();// 将Base64编码转换成图片
+
+Image image = Image.FromFile(@"D:\1.jpg");
+image.MakeThumbnail(@"D:\2.jpg", 120, 80, ThumbnailCutMode.LockWidth);//生成缩略图
+
+Bitmap bmp = new Bitmap(@"D:\1.jpg");
+Bitmap newBmp = bmp.BWPic(bmp.Width, bmp.Height);//转换成黑白
+Bitmap newBmp = bmp.CutAndResize(new Rectangle(0, 0, 1600, 900), 160, 90);//裁剪并缩放
+bmp.RevPicLR(bmp.Width, bmp.Height);//左右镜像
+bmp.RevPicUD(bmp.Width, bmp.Height);//上下镜像
+```
+### 35.随机数
+```csharp
+Random rnd = new Random();
+int num = rnd.StrictNext();//产生真随机数
+double gauss = rnd.NextGauss(20,5);//产生正态分布的随机数
+```
 # Asp.Net MVC和Asp.Net Core的支持断点续传和多线程下载的ResumeFileResult
 
 允许你在ASP.NET Core中通过MVC/WebAPI应用程序传输文件数据时使用断点续传以及多线程下载。
@@ -544,177 +918,185 @@ Console.WriteLine(newObj.ToJsonString());// {"Password":null,"Name":"张三","Nu
 ### .NET Framework
 在你的控制器中，你可以像在`FileResult`一样的方式使用它。
 ```csharp
-        using Masuit.Tools.Mvc;
-        using Masuit.Tools.Mvc.ResumeFileResult;
+using Masuit.Tools.Mvc;
+using Masuit.Tools.Mvc.ResumeFileResult;
 ```
 
 ```csharp
+private readonly MimeMapper mimeMapper=new MimeMapper(); // 推荐使用依赖注入
 
-        private readonly MimeMapper mimeMapper=new MimeMapper(); // 推荐使用依赖注入
+public ActionResult ResumeFileResult()
+{
+    var path = Server.MapPath("~/Content/test.mp4");
+    return new ResumeFileResult(path, mimeMapper.GetMimeFromPath(path), Request);
+}
 
-        public ActionResult ResumeFileResult()
-        {
-            var path = Server.MapPath("~/Content/test.mp4");
-            return new ResumeFileResult(path, mimeMapper.GetMimeFromPath(path), Request);
-        }
+public ActionResult ResumeFile()
+{
+    return this.ResumeFile("~/Content/test.mp4", mimeMapper.GetMimeFromPath(path), "test.mp4");
+}
 
-        public ActionResult ResumeFile()
-        {
-            return this.ResumeFile("~/Content/test.mp4", mimeMapper.GetMimeFromPath(path), "test.mp4");
-        }
-
-        public ActionResult ResumePhysicalFile()
-        {
-            return this.ResumePhysicalFile(@"D:/test.mp4", mimeMapper.GetMimeFromPath(@"D:/test.mp4"), "test.mp4");
-        }
+public ActionResult ResumePhysicalFile()
+{
+    return this.ResumePhysicalFile(@"D:/test.mp4", mimeMapper.GetMimeFromPath(@"D:/test.mp4"), "test.mp4");
+}
 ```
 
 ### Asp.Net Core
 要使用ResumeFileResults，必须在`Startup.cs`的`ConfigureServices`方法调用中配置服务：
 
 ```csharp
-        using Masuit.Tools.AspNetCore.ResumeFileResults.Extensions;
+using Masuit.Tools.AspNetCore.ResumeFileResults.Extensions;
 ```
 
 ```csharp
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddResumeFileResult();
-        }
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddResumeFileResult();
+}
 ```
 
 然后在你的控制器中，你可以像在`FileResult`一样的方式使用它。
 
 ```csharp
-        using Masuit.Tools.AspNetCore.ResumeFileResults.Extensions;
+using Masuit.Tools.AspNetCore.ResumeFileResults.Extensions;
 ```
 
 ```csharp
-        private const string EntityTag = "\"TestFile\"";
+private const string EntityTag = "\"TestFile\"";
 
-        private readonly IHostingEnvironment _hostingEnvironment;
+private readonly IHostingEnvironment _hostingEnvironment;
 
-        private readonly DateTimeOffset _lastModified = new DateTimeOffset(2016, 1, 1, 0, 0, 0, TimeSpan.Zero);
+private readonly DateTimeOffset _lastModified = new DateTimeOffset(2016, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="hostingEnvironment"></param>
-        public TestController(IHostingEnvironment hostingEnvironment)
-        {
-            _hostingEnvironment = hostingEnvironment;
-        }
+/// <summary>
+/// 
+/// </summary>
+/// <param name="hostingEnvironment"></param>
+public TestController(IHostingEnvironment hostingEnvironment)
+{
+    _hostingEnvironment = hostingEnvironment;
+}
 
-        [HttpGet("content/{fileName}/{etag}")]
-        public IActionResult FileContent(bool fileName, bool etag)
-        {
-            string webRoot = _hostingEnvironment.WebRootPath;
-            var content = System.IO.File.ReadAllBytes(Path.Combine(webRoot, "TestFile.txt"));
-            ResumeFileContentResult result = this.ResumeFile(content, "text/plain", fileName ? "TestFile.txt" : null, etag ? EntityTag : null);
-            result.LastModified = _lastModified;
-            return result;
-        }
+[HttpGet("content/{fileName}/{etag}")]
+public IActionResult FileContent(bool fileName, bool etag)
+{
+    string webRoot = _hostingEnvironment.WebRootPath;
+    var content = System.IO.File.ReadAllBytes(Path.Combine(webRoot, "TestFile.txt"));
+    ResumeFileContentResult result = this.ResumeFile(content, "text/plain", fileName ? "TestFile.txt" : null, etag ? EntityTag : null);
+    result.LastModified = _lastModified;
+    return result;
+}
 
-        [HttpGet("content/{fileName}")]
-        public IActionResult FileContent(bool fileName)
-        {
-            string webRoot = _hostingEnvironment.WebRootPath;
-            var content = System.IO.File.ReadAllBytes(Path.Combine(webRoot, "TestFile.txt"));
-            var result = new ResumeFileContentResult(content, "text/plain")
-            {
-                FileInlineName = "TestFile.txt",
-                LastModified = _lastModified
-            };
-            return result;
-        }
+[HttpGet("content/{fileName}")]
+public IActionResult FileContent(bool fileName)
+{
+    string webRoot = _hostingEnvironment.WebRootPath;
+    var content = System.IO.File.ReadAllBytes(Path.Combine(webRoot, "TestFile.txt"));
+    var result = new ResumeFileContentResult(content, "text/plain")
+    {
+        FileInlineName = "TestFile.txt",
+        LastModified = _lastModified
+    };
+    return result;
+}
 
-        [HttpHead("file")]
-        public IActionResult FileHead()
-        {
-            ResumeVirtualFileResult result = this.ResumeFile("TestFile.txt", "text/plain", "TestFile.txt", EntityTag);
-            result.LastModified = _lastModified;
-            return result;
-        }
+[HttpHead("file")]
+public IActionResult FileHead()
+{
+    ResumeVirtualFileResult result = this.ResumeFile("TestFile.txt", "text/plain", "TestFile.txt", EntityTag);
+    result.LastModified = _lastModified;
+    return result;
+}
 
-        [HttpPut("file")]
-        public IActionResult FilePut()
-        {
-            ResumeVirtualFileResult result = this.ResumeFile("TestFile.txt", "text/plain", "TestFile.txt", EntityTag);
-            result.LastModified = _lastModified;
-            return result;
-        }
+[HttpPut("file")]
+public IActionResult FilePut()
+{
+    ResumeVirtualFileResult result = this.ResumeFile("TestFile.txt", "text/plain", "TestFile.txt", EntityTag);
+    result.LastModified = _lastModified;
+    return result;
+}
 
-        [HttpGet("stream/{fileName}/{etag}")]
-        public IActionResult FileStream(bool fileName, bool etag)
-        {
-            string webRoot = _hostingEnvironment.WebRootPath;
-            FileStream stream = System.IO.File.OpenRead(Path.Combine(webRoot, "TestFile.txt"));
+[HttpGet("stream/{fileName}/{etag}")]
+public IActionResult FileStream(bool fileName, bool etag)
+{
+    string webRoot = _hostingEnvironment.WebRootPath;
+    FileStream stream = System.IO.File.OpenRead(Path.Combine(webRoot, "TestFile.txt"));
 
-            ResumeFileStreamResult result = this.ResumeFile(stream, "text/plain", fileName ? "TestFile.txt" : null, etag ? EntityTag : null);
-            result.LastModified = _lastModified;
-            return result;
-        }
+    ResumeFileStreamResult result = this.ResumeFile(stream, "text/plain", fileName ? "TestFile.txt" : null, etag ? EntityTag : null);
+    result.LastModified = _lastModified;
+    return result;
+}
 
-        [HttpGet("stream/{fileName}")]
-        public IActionResult FileStream(bool fileName)
-        {
-            string webRoot = _hostingEnvironment.WebRootPath;
-            FileStream stream = System.IO.File.OpenRead(Path.Combine(webRoot, "TestFile.txt"));
+[HttpGet("stream/{fileName}")]
+public IActionResult FileStream(bool fileName)
+{
+    string webRoot = _hostingEnvironment.WebRootPath;
+    FileStream stream = System.IO.File.OpenRead(Path.Combine(webRoot, "TestFile.txt"));
 
-            var result = new ResumeFileStreamResult(stream, "text/plain")
-            {
-                FileInlineName = "TestFile.txt",
-                LastModified = _lastModified
-            };
+    var result = new ResumeFileStreamResult(stream, "text/plain")
+    {
+        FileInlineName = "TestFile.txt",
+        LastModified = _lastModified
+    };
 
-            return result;
-        }
+    return result;
+}
 
-        [HttpGet("physical/{fileName}/{etag}")]
-        public IActionResult PhysicalFile(bool fileName, bool etag)
-        {
-            string webRoot = _hostingEnvironment.WebRootPath;
+[HttpGet("physical/{fileName}/{etag}")]
+public IActionResult PhysicalFile(bool fileName, bool etag)
+{
+    string webRoot = _hostingEnvironment.WebRootPath;
 
-            ResumePhysicalFileResult result = this.ResumePhysicalFile(Path.Combine(webRoot, "TestFile.txt"), "text/plain", fileName ? "TestFile.txt" : null, etag ? EntityTag : null);
-            result.LastModified = _lastModified;
-            return result;
-        }
+    ResumePhysicalFileResult result = this.ResumePhysicalFile(Path.Combine(webRoot, "TestFile.txt"), "text/plain", fileName ? "TestFile.txt" : null, etag ? EntityTag : null);
+    result.LastModified = _lastModified;
+    return result;
+}
 
-        [HttpGet("physical/{fileName}")]
-        public IActionResult PhysicalFile(bool fileName)
-        {
-            string webRoot = _hostingEnvironment.WebRootPath;
+[HttpGet("physical/{fileName}")]
+public IActionResult PhysicalFile(bool fileName)
+{
+    string webRoot = _hostingEnvironment.WebRootPath;
 
-            var result = new ResumePhysicalFileResult(Path.Combine(webRoot, "TestFile.txt"), "text/plain")
-            {
-                FileInlineName = "TestFile.txt",
-                LastModified = _lastModified
-            };
+    var result = new ResumePhysicalFileResult(Path.Combine(webRoot, "TestFile.txt"), "text/plain")
+    {
+        FileInlineName = "TestFile.txt",
+        LastModified = _lastModified
+    };
 
-            return result;
-        }
+    return result;
+}
 
-        [HttpGet("virtual/{fileName}/{etag}")]
-        public IActionResult VirtualFile(bool fileName, bool etag)
-        {
-            ResumeVirtualFileResult result = this.ResumeFile("TestFile.txt", "text/plain", fileName ? "TestFile.txt" : null, etag ? EntityTag : null);
-            result.LastModified = _lastModified;
-            return result;
-        }
+[HttpGet("virtual/{fileName}/{etag}")]
+public IActionResult VirtualFile(bool fileName, bool etag)
+{
+    ResumeVirtualFileResult result = this.ResumeFile("TestFile.txt", "text/plain", fileName ? "TestFile.txt" : null, etag ? EntityTag : null);
+    result.LastModified = _lastModified;
+    return result;
+}
 ```
 
 以上示例将为您的数据提供“Content-Disposition：attachment”。 当没有提供fileName时，数据将作为“Content-Disposition：inline”提供。
 另外，它可以提供`ETag`和`LastModified`标题。
 
 ```csharp
-        [HttpGet("virtual/{fileName}")]
-        public IActionResult VirtualFile(bool fileName)
-        {
-            var result = new ResumeVirtualFileResult("TestFile.txt", "text/plain")
-            {
-                FileInlineName = "TestFile.txt",
-                LastModified = _lastModified
-            };
-            return result;
-        }
+[HttpGet("virtual/{fileName}")]
+public IActionResult VirtualFile(bool fileName)
+{
+    var result = new ResumeVirtualFileResult("TestFile.txt", "text/plain")
+    {
+        FileInlineName = "TestFile.txt",
+        LastModified = _lastModified
+    };
+    return result;
+}
 ```
+### 推荐项目
+基于EntityFrameworkCore和Lucene.NET实现的全文检索搜索引擎：[Masuit.LuceneEFCore.SearchEngine](https://github.com/ldqk/Masuit.LuceneEFCore.SearchEngine "Masuit.LuceneEFCore.SearchEngine")
+
+开源博客系统：[Masuit.MyBlogs](https://github.com/ldqk/Masuit.MyBlogs "Masuit.MyBlogs")
+### 友情赞助
+||||
+|---|--|---|
+|支付宝|微信收款码|QQ转账|
+|![支付宝](https://git.lug.ustc.edu.cn/ldqk/imgbed/raw/master/5ccadc6a30077.jpg)|![微信](https://git.lug.ustc.edu.cn/ldqk/imgbed/raw/master/5ccadc6b53f28.jpg)|![QQ](https://git.lug.ustc.edu.cn/ldqk/imgbed/raw/master/5ccadc6c9aa5b.jpg)|

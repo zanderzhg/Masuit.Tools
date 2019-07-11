@@ -1,14 +1,12 @@
-﻿using System;
+﻿using Masuit.Tools.Core.Config;
+using Masuit.Tools.Models;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Masuit.Tools.Core.Config;
-using Masuit.Tools.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Masuit.Tools.Core.Net
 {
@@ -17,61 +15,6 @@ namespace Masuit.Tools.Core.Net
     /// </summary>
     public static class WebExtension
     {
-        #region 获取线程内唯一的EF上下文对象
-
-        /// <summary>
-        /// 获取线程内唯一的EF上下文对象，.NetCore中获取EF数据上下文对象，需要通过依赖注入的方式，请考虑在自己的项目中通过Masuit.Tools提供的CallContext对象实现获取线程内唯一的EF上下文对象，示例代码：
-        /// <para>public static DataContext GetDbContext()</para>
-        /// <para>{</para>
-        /// <para>    DataContext db;</para>
-        /// <para>    if (CallContext&lt;DataContext>.GetData("db") is null)</para>
-        /// <para>    {</para>
-        /// <para>        DbContextOptions&lt;DataContext> dbContextOption = new DbContextOptions&lt;DataContext>();</para>
-        /// <para>        DbContextOptionsBuilder&lt;DataContext> dbContextOptionBuilder = new DbContextOptionsBuilder&lt;DataContext>(dbContextOption);</para>
-        /// <para>        db = new DataContext(dbContextOptionBuilder.UseSqlServer(CommonHelper.ConnectionString).Options);</para>
-        /// <para>        CallContext&lt;DataContext>.SetData("db", db);</para>
-        /// <para>    }</para>
-        /// <para>    db = CallContext&lt;DataContext>.GetData("db");</para>
-        /// <para>    return db;</para>
-        /// <para>}</para>
-        /// </summary>
-        /// <typeparam name="T">EF上下文容器对象</typeparam>
-        /// <returns>EF上下文容器对象</returns>
-        [Obsolete(@".NetCore中获取EF数据上下文对象，需要通过依赖注入的方式，请考虑在自己的项目中通过Masuit.Tools提供的CallContext对象实现获取线程内唯一的EF上下文对象，示例代码：
-        public static DataContext GetDbContext()
-        {
-            DataContext db;
-            if (CallContext<DataContext>.GetData(""db"") is null)
-            {
-                DbContextOptions<DataContext> dbContextOption = new DbContextOptions<DataContext>();
-                DbContextOptionsBuilder<DataContext> dbContextOptionBuilder = new DbContextOptionsBuilder<DataContext>(dbContextOption);
-                db = new DataContext(dbContextOptionBuilder.UseSqlServer(CommonHelper.ConnectionString).Options);
-                CallContext<DataContext>.SetData(""db"", db);
-            }
-            db = CallContext<DataContext>.GetData(""db"");
-            return db;
-        }")]
-        public static T GetDbContext<T>() where T : new()
-        {
-            throw new Exception(@".NetCore中获取EF数据上下文对象，需要通过依赖注入的方式，请考虑在自己的项目中通过Masuit.Tools提供的CallContext对象实现获取线程内唯一的EF上下文对象，示例代码：
-                                        public static DataContext GetDbContext()
-                                        {
-                                            DataContext db;
-                                            if (CallContext<DataContext>.GetData(""db"") is null)
-                                            {
-                                                DbContextOptions<DataContext> dbContextOption = new DbContextOptions<DataContext>();
-                                                DbContextOptionsBuilder<DataContext> dbContextOptionBuilder = new DbContextOptionsBuilder<DataContext>(dbContextOption);
-                                                db = new DataContext(dbContextOptionBuilder.UseSqlServer(CommonHelper.ConnectionString).Options);
-                                                CallContext<DataContext>.SetData(""db"", db);
-                                            }
-                                            db = CallContext<DataContext>.GetData(""db"");
-                                            return db;
-                                        }
-        ");
-        }
-
-        #endregion
-
         #region 获取客户端IP地址信息
 
         /// <summary>
@@ -106,10 +49,10 @@ namespace Masuit.Tools.Core.Net
             ip.MatchInetAddress(out var isIpAddress);
             if (isIpAddress)
             {
-                string ak = CoreConfig.Configuration["AppSettings:BaiduAK"];
+                string ak = CoreConfig.Configuration["BaiduAK"];
                 if (string.IsNullOrEmpty(ak))
                 {
-                    throw new Exception("未配置BaiduAK，请先在您的应用程序web.config或者App.config中的AppSettings节点下添加BaiduAK配置节(注意大小写)");
+                    throw new Exception("未配置BaiduAK，请先在您的应用程序appsettings.json中下添加BaiduAK配置节(注意大小写)");
                 }
                 using (HttpClient client = new HttpClient() { BaseAddress = new Uri("http://api.map.baidu.com") })
                 {
@@ -215,53 +158,31 @@ namespace Masuit.Tools.Core.Net
         #endregion
 
         /// <summary>
-        /// 上传图片到百度图床
+        /// 写Session
         /// </summary>
-        /// <param name="stream"></param>
-        /// <returns></returns>
-        public static async Task<string> UploadImageAsync(Stream stream)
+        /// <param name="session"></param>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        public static void Set(this ISession session, string key, object value)
         {
-            using (HttpClient httpClient = new HttpClient()
+            session.SetString(key, value.ToJsonString());
+        }
+
+        /// <summary>
+        /// 获取Session
+        /// </summary>
+        /// <typeparam name="T">对象</typeparam>
+        /// <param name="session"></param>
+        /// <param name="key">键</param>
+        /// <returns>对象</returns>
+        public static T Get<T>(this ISession session, string key)
+        {
+            string value = session.GetString(key);
+            if (string.IsNullOrEmpty(value))
             {
-                BaseAddress = new Uri("https://sp1.baidu.com"),
-            })
-            {
-                httpClient.DefaultRequestHeaders.UserAgent.Add(ProductInfoHeaderValue.Parse("Mozilla/5.0"));
-                using (var bc = new StreamContent(stream))
-                {
-                    bc.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
-                    {
-                        FileName = "1.jpg",
-                        Name = "image"
-                    };
-                    bc.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpeg");
-                    using (var content = new MultipartFormDataContent { bc })
-                    {
-                        return await await httpClient.PostAsync("/70cHazva2gU2pMbgoY3K/n/image?needJson=true", content).ContinueWith(async t =>
-                        {
-                            if (t.IsCanceled || t.IsFaulted)
-                            {
-                                Console.WriteLine("发送请求出错了" + t.Exception);
-                                return string.Empty;
-                            }
-                            var res = await t;
-                            if (res.IsSuccessStatusCode)
-                            {
-                                string s = await res.Content.ReadAsStringAsync();
-                                var token = JObject.Parse(s);
-                                if ((int)token["errno"] == 0)
-                                {
-                                    s = (string)token["data"]["imageUrl"];
-                                    return s;
-                                }
-                                s = (string)token["errmsg"];
-                                return s;
-                            }
-                            return string.Empty;
-                        });
-                    }
-                }
+                return default;
             }
+            return JsonConvert.DeserializeObject<T>(value);
         }
     }
 }

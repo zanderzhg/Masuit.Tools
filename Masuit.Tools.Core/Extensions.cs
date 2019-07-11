@@ -1078,7 +1078,7 @@ namespace Masuit.Tools
         /// <returns>int类型的数字</returns>
         public static int ToInt32(this string s)
         {
-            int.TryParse(s, out int result);
+            bool b = int.TryParse(s, out int result);
             return result;
         }
 
@@ -1089,7 +1089,7 @@ namespace Masuit.Tools
         /// <returns>int类型的数字</returns>
         public static long ToInt64(this string s)
         {
-            long.TryParse(s, out var result);
+            bool b = long.TryParse(s, out var result);
             return result;
         }
 
@@ -1100,7 +1100,7 @@ namespace Masuit.Tools
         /// <returns>double类型的数据</returns>
         public static double ToDouble(this string s)
         {
-            double.TryParse(s, out var result);
+            bool b = double.TryParse(s, out var result);
             return result;
         }
 
@@ -1111,7 +1111,7 @@ namespace Masuit.Tools
         /// <returns>int类型的数字</returns>
         public static decimal ToDecimal(this string s)
         {
-            decimal.TryParse(s, out var result);
+            var b = decimal.TryParse(s, out var result);
             return result;
         }
 
@@ -1185,7 +1185,7 @@ namespace Masuit.Tools
         /// <param name="s">源字符串</param>
         /// <param name="keys">关键词列表</param>
         /// <returns></returns>
-        public static bool Contains(this string s, string[] keys) => Regex.IsMatch(s.ToLower(), string.Join("|", keys).ToLower());
+        public static bool Contains(this string s, IEnumerable<string> keys) => Regex.IsMatch(s.ToLower(), string.Join("|", keys).ToLower());
 
         #endregion
 
@@ -1220,85 +1220,34 @@ namespace Masuit.Tools
         #region 匹配完整的URL
 
         /// <summary>
-        /// 匹配完整格式的URL，支持以下格式的URL,支持中文域名：<br/>
-        /// 支持不带协议名的网址，支持自适应协议的网址，支持完整路径，支持查询参数，支持锚点，支持锚点查询参数，支持16进制编码<br/>
-        /// www.baidu.com <br/>
-        /// www.baidu.com <br/>
-        /// baidu.com <br/>
-        /// //www.baidu.com <br/>
-        /// http://www.baidu.com <br/>
-        /// https://www.baidu.com <br/>
-        /// https://baidu.com <br/>
-        /// ftp://baidu.com <br/>
-        /// ftp://baidu.com/abc/def <br/>
-        /// ftp://admin:123456@baidu.com <br/>
-        /// ftp://admin:123456@baidu.com/abc/def <br/>
-        /// https://baidu.com:8080 <br/>
-        /// https://baidu.com/abc/def <br/>
-        /// https://baidu.com:8080/abc/def <br/>
-        /// https://baidu.com:8080/abc/def/hhh.html <br/>
-        /// https://baidu.com:8080/abc/def/hhh.html?s=www <br/>
-        /// https://baidu.com/abc/def/hhh.html?s=w@w{w}!s <br/>
-        /// https://baidu.com:8080/abc/def/hhh.html?s=www&amp;x=yy+y <br/>
-        /// https://baidu.com/abc/def/hhh.html?s=www&amp;x=yyy <br/>
-        /// https://baidu.com:8080/abc/def/hhh.html?s=www&amp;x=yyy#top <br/>
-        /// https://baidu.com:8080/abc/def/hi_jk-mn%ADF%AA/hhh.html?s=www&amp;x=yyy#top <br/>
-        /// https://baidu.com:8080/abc/def/hi_j+k-mn%ADF%AA?s=www&amp;x=yyy#top/aaa <br/>
-        /// https://baidu.com:8080/abc/def/hi_jk-mn%ADF%AA?s=www&amp;x=yyy#top/aaa/bbb/ccc <br/>
-        /// http://music.163.com/#/my/m/music/empty <br/>
-        /// http://music.163.com/abc/#/my/m/music/empty <br/>
-        /// http://music.163.com/def/hhh.html?s=www&amp;x=yyy#/my/m/music/empty <br/>
-        /// http://music.163.com/def/hhh.html?s=www&amp;x=yyy/#/my/m/music/empty <br/>
-        /// http://music.163.com/#/search/m/?%23%2Fmy%2Fm%2Fmusic%2Fempty=&amp;s=fade&amp;type=1!k <br/>
+        /// 匹配完整格式的URL
         /// </summary>
         /// <param name="s">源字符串</param>
         /// <param name="isMatch">是否匹配成功，若返回true，则会得到一个Match对象，否则为null</param>
         /// <returns>匹配对象</returns>
-        public static Match MatchUrl(this string s, out bool isMatch)
+        public static Uri MatchUrl(this string s, out bool isMatch)
         {
-            Match match = Regex.Match(s, @"^((\w*):?//)?([a-zA-Z0-9\-]{0,61}:?[a-zA-Z0-9\-]{0,61}@?)?([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}(:(\d{1,5}))?(/([a-z0-9A-Z-_@{}!+%/]+(\.\w+)?)?(\?([a-z0-9A-Z-_@{}!+%]+=[a-z0-9A-Z-_@{}!+%]+&?)+)?(/?#[a-z0-9A-Z-_@{}!+%/]+)?(\?([a-z0-9A-Z-_@{}!+%]+=[a-z0-9A-Z-_@{}!+%]*&?)+)?)?$");
-            isMatch = match.Success;
-            return isMatch ? match : null;
+            try
+            {
+                isMatch = true;
+                return new Uri(s);
+            }
+            catch (Exception e)
+            {
+                isMatch = false;
+                return null;
+            }
         }
 
         /// <summary>
-        /// 匹配完整格式的URL，支持以下格式的URL,支持中文域名：<br/>
-        /// 支持不带协议名的网址，支持自适应协议的网址，支持完整路径，支持查询参数，支持锚点，支持锚点查询参数，支持16进制编码<br/>
-        /// www.baidu.com <br/>
-        /// www.baidu.com <br/>
-        /// baidu.com <br/>
-        /// //www.baidu.com <br/>
-        /// http://www.baidu.com <br/>
-        /// https://www.baidu.com <br/>
-        /// https://baidu.com <br/>
-        /// ftp://baidu.com <br/>
-        /// ftp://baidu.com/abc/def <br/>
-        /// ftp://admin:123456@baidu.com <br/>
-        /// ftp://admin:123456@baidu.com/abc/def <br/>
-        /// https://baidu.com:8080 <br/>
-        /// https://baidu.com/abc/def <br/>
-        /// https://baidu.com:8080/abc/def <br/>
-        /// https://baidu.com:8080/abc/def/hhh.html <br/>
-        /// https://baidu.com:8080/abc/def/hhh.html?s=www <br/>
-        /// https://baidu.com/abc/def/hhh.html?s=w@w{w}!s <br/>
-        /// https://baidu.com:8080/abc/def/hhh.html?s=www&amp;x=yy+y <br/>
-        /// https://baidu.com/abc/def/hhh.html?s=www&amp;x=yyy <br/>
-        /// https://baidu.com:8080/abc/def/hhh.html?s=www&amp;x=yyy#top <br/>
-        /// https://baidu.com:8080/abc/def/hi_jk-mn%ADF%AA/hhh.html?s=www&amp;x=yyy#top <br/>
-        /// https://baidu.com:8080/abc/def/hi_j+k-mn%ADF%AA?s=www&amp;x=yyy#top/aaa <br/>
-        /// https://baidu.com:8080/abc/def/hi_jk-mn%ADF%AA?s=www&amp;x=yyy#top/aaa/bbb/ccc <br/>
-        /// http://music.163.com/#/my/m/music/empty <br/>
-        /// http://music.163.com/abc/#/my/m/music/empty <br/>
-        /// http://music.163.com/def/hhh.html?s=www&amp;x=yyy#/my/m/music/empty <br/>
-        /// http://music.163.com/def/hhh.html?s=www&amp;x=yyy/#/my/m/music/empty <br/>
-        /// http://music.163.com/#/search/m/?%23%2Fmy%2Fm%2Fmusic%2Fempty=&amp;s=fade&amp;type=1!k <br/>
+        /// 匹配完整格式的URL
         /// </summary>
         /// <param name="s">源字符串</param>
         /// <returns>是否匹配成功</returns>
         public static bool MatchUrl(this string s)
         {
-            MatchUrl(s, out bool success);
-            return success;
+            MatchUrl(s, out var isMatch);
+            return isMatch;
         }
 
         #endregion
@@ -1524,33 +1473,12 @@ namespace Masuit.Tools
         /// 生成唯一短字符串
         /// </summary>
         /// <param name="str"></param>
-        /// <param name="length">生成的字符串长度，越长冲突的概率越小，默认长度为6，最小长度为5，最大长度为22</param>
+        /// <param name="chars">可用字符数数量，0-9,a-z,A-Z</param>
         /// <returns></returns>
-        public static string CreateShortToken(this string str, int length = 6)
+        public static string CreateShortToken(this string str, byte chars = 36)
         {
-            var temp = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Trim('=');
-            if (length <= 22)
-            {
-                if (length < 5)
-                {
-                    length = 5;
-                }
-
-                temp = temp.Substring(0, length);
-            }
-
-            return Regex.Replace(temp, @"\p{P}|\+", string.Empty);
-        }
-
-        /// <summary>
-        /// 生成唯一短字符串
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static string CreateShortToken(this string str)
-        {
-            var nf = new NumberFormater(36);
-            return nf.ToString(Stopwatch.GetTimestamp());
+            var nf = new NumberFormater(chars);
+            return nf.ToString((DateTime.Now.Ticks - 630822816000000000) * 100 + Stopwatch.GetTimestamp() % 100);
         }
 
         /// <summary>
@@ -1610,19 +1538,31 @@ namespace Masuit.Tools
         /// <returns></returns>
         public static bool IpAddressInRange(this string input, string begin, string ends)
         {
-            if (input.MatchInetAddress() && begin.MatchInetAddress() && ends.MatchInetAddress())
+            uint current = IPToID(input);
+            return current >= IPToID(begin) && current <= IPToID(ends);
+        }
+
+        /// <summary>
+        /// IP地址转换成数字
+        /// </summary>
+        /// <param name="addr">IP地址</param>
+        /// <returns>数字,输入无效IP地址返回0</returns>
+        private static uint IPToID(string addr)
+        {
+            if (!IPAddress.TryParse(addr, out var ip))
             {
-                string[] ipStarts = begin.Split('.');
-                string[] ipEnds = ends.Split('.');
-                string[] inputs = input.Split('.');
-                uint start = uint.Parse(ipStarts[0]) << 24 | uint.Parse(ipStarts[1]) << 16 | uint.Parse(ipStarts[2]) << 8 | uint.Parse(ipStarts[3]);
-                uint end = uint.Parse(ipEnds[0]) << 24 | uint.Parse(ipEnds[1]) << 16 | uint.Parse(ipEnds[2]) << 8 | uint.Parse(ipEnds[3]);
-                uint current = uint.Parse(inputs[0]) << 24 | uint.Parse(inputs[1]) << 16 | uint.Parse(inputs[2]) << 8 | uint.Parse(inputs[3]);
-                return current >= start && current <= end;
+                return 0;
             }
 
-            return false;
+            byte[] bInt = ip.GetAddressBytes();
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(bInt);
+            }
+
+            return BitConverter.ToUInt32(bInt, 0);
         }
+
         /// <summary>
         /// 判断IP是否是私有地址
         /// </summary>
@@ -1700,6 +1640,32 @@ namespace Masuit.Tools
                     return !IPAddress.Parse(uri.DnsSafeHost).IsPrivateIP();
             }
             return false;
+        }
+
+        /// <summary>
+        /// 生成真正的随机数
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="seed"></param>
+        /// <returns></returns>
+        public static int StrictNext(this Random r, int seed = int.MaxValue)
+        {
+            return new Random((int)Stopwatch.GetTimestamp()).Next(seed);
+        }
+
+        /// <summary>
+        /// 产生正态分布的随机数
+        /// </summary>
+        /// <param name="rand"></param>
+        /// <param name="mean">均值</param>
+        /// <param name="stdDev">方差</param>
+        /// <returns></returns>
+        public static double NextGauss(this Random rand, double mean, double stdDev)
+        {
+            double u1 = 1.0 - rand.NextDouble();
+            double u2 = 1.0 - rand.NextDouble();
+            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+            return mean + stdDev * randStdNormal;
         }
     }
 }

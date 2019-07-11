@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore;
+﻿using Masuit.Tools.Hardware;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using System;
 
 namespace NetCoreTest
 {
@@ -7,6 +9,7 @@ namespace NetCoreTest
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine((long)SystemInfo.GetRamInfo().MemoryAvailable);
             CreateWebHostBuilder(args).Build().Run();
         }
 
